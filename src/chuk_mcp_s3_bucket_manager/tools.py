@@ -1,9 +1,11 @@
 # src/chuk_mcp_s3_bucket_manager/tools.py
 import os
 import logging
+import sys
 import boto3
 from botocore.exceptions import ClientError
 from datetime import datetime
+from dotenv import load_dotenv
 from pydantic import ValidationError
 
 # Import MCP tool decorator from your runtime
@@ -20,6 +22,16 @@ from chuk_mcp_s3_bucket_manager.models import (
 )
 
 logger = logging.getLogger("chuk-mcp-s3-bucket-manager")
+
+# Configure logger to output to stderr
+handler = logging.StreamHandler(sys.stderr)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
+
+# Load environment variables from .env file if it exists
+load_dotenv()
 
 def get_s3_client():
     """Create and return an S3 client using environment variables."""
@@ -56,7 +68,13 @@ def list_buckets() -> dict:
                 )
             )
         result = ListBucketsResult(buckets=bucket_list)
-        return result.model_dump()
+        result_dict = result.model_dump()
+
+        # Convert any datetime values to ISO format strings before returning
+        for bucket in result_dict.get("buckets", []):
+            if "creation_date" in bucket and isinstance(bucket["creation_date"], datetime):
+                bucket["creation_date"] = bucket["creation_date"].isoformat()
+        return result_dict
     except Exception as e:
         logger.error(f"Error listing buckets: {e}")
         raise ValueError(f"Error listing buckets: {e}")
