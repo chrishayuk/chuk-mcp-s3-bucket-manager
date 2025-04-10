@@ -28,7 +28,7 @@ handler = logging.StreamHandler(sys.stderr)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.CRITICAL)
 
 # Load environment variables from .env file if it exists
 load_dotenv()
