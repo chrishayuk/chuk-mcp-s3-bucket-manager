@@ -8,6 +8,11 @@ class BucketInfo(BaseModel):
     creation_date: datetime = Field(..., description="Bucket creation date")
     region: Optional[str] = Field(None, description="Bucket region")
 
+    class Config:
+        json_encoders = {
+            datetime: lambda v: v.isoformat()
+        }
+
 class ListBucketsResult(BaseModel):
     buckets: List[BucketInfo] = Field(..., description="List of S3 buckets")
 

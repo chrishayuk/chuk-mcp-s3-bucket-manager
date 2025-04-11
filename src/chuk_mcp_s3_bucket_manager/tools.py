@@ -3,13 +3,18 @@ import os
 import logging
 import sys
 import boto3
+import json
 from botocore.exceptions import ClientError
 from datetime import datetime
+from dotenv import load_dotenv
 from dotenv import load_dotenv
 from pydantic import ValidationError
 
 # Import MCP tool decorator from your runtime
 from chuk_mcp_runtime.common.mcp_tool_decorator import mcp_tool
+
+# load environment variables
+load_dotenv()
 
 # Import the defined models
 from chuk_mcp_s3_bucket_manager.models import (
@@ -63,18 +68,13 @@ def list_buckets() -> dict:
             bucket_list.append(
                 BucketInfo(
                     name=bucket["Name"],
-                    creation_date=bucket["CreationDate"],
+                    creation_date=bucket["CreationDate"].isoformat(),
                     region=region
                 )
             )
         result = ListBucketsResult(buckets=bucket_list)
-        result_dict = result.model_dump()
-
-        # Convert any datetime values to ISO format strings before returning
-        for bucket in result_dict.get("buckets", []):
-            if "creation_date" in bucket and isinstance(bucket["creation_date"], datetime):
-                bucket["creation_date"] = bucket["creation_date"].isoformat()
-        return result_dict
+        # Use model_dump_json to apply json_encoders, then convert back to dict.
+        return json.loads(result.model_dump_json())
     except Exception as e:
         logger.error(f"Error listing buckets: {e}")
         raise ValueError(f"Error listing buckets: {e}")

@@ -13,4 +13,8 @@ wheels/
 .pytest_cache
 
 # .env
+<<<<<<< HEAD
 .env
+=======
+
+>>>>>>> 57c772c (updated to work with environment)
